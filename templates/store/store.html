@@ -29,7 +29,7 @@
             </header>
             <div class="filter-content collapse show" id="collapse_1" style="">
                 <div class="card-body">
-                    
+                    <!-- Despliega las categorias con un bucle for -->
                     <ul class="list-menu">
                         <li><a href="{% url 'store' %}">Todos</a></li>
                         {% for category in links %}
@@ -131,7 +131,7 @@
         <div class="col-md-4">
             <figure class="card card-product-grid">
                 <div class="img-wrap"> 
-                    
+                    <!-- aqui le vinculo url a la imagen -->
                     <a href= "{{ product.get_url }}"><img src="{{ product.images.url }}"></a>
                     
                 </div> <!-- img-wrap.// -->
@@ -143,7 +143,7 @@
                             
                         </div> <!-- price-wrap.// -->
                     </div>
-                    <a href="#" class="btn btn-block btn-success">Agregar al carrito </a>
+                    <a href="{% url 'add_cart' product.id %}" class="btn btn-block btn-success">Agregar al carrito </a>
                 </figcaption>
             </figure>
         </div> <!-- col.// -->
