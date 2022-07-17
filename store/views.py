@@ -1,6 +1,6 @@
-from tkinter import E
-from unicodedata import category
 from django.shortcuts import get_object_or_404, render
+from carts.models import CartItem
+from carts.views import _cart_id
 from .models import Product
 from category.models import Category
 
@@ -28,11 +28,15 @@ def product_detail(request, category_slug, product_slug):
     try:
         #se hace comparacion con los parametros introducidos y los de la BD
         single_product = Product.objects.get(category__slug=category_slug, slug=product_slug)
+        # variable booleana para ver si existe un item en el carro
+        in_cart = CartItem.objects.filter(cart__cart_id =_cart_id(request), product=single_product).exists()
     except Exception as e:
+
         raise e
     #se pasa en el contexto el resultado de la comparacion para pasarlo al html
     context = {
         'single_product': single_product,
+        'in_cart': in_cart,
     }
 
     return render(request, 'store/product_detail.html', context)
