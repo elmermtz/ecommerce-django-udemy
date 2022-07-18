@@ -154,13 +154,35 @@
     
     
     <nav class="mt-4" aria-label="Page navigation sample">
+
+        <!-- ___Flechas y numeros del paginador___ -->
+        {% if products.has_other_pages %}
       <ul class="pagination">
-        <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
-        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-        <li class="page-item"><a class="page-link" href="#">2</a></li>
-        <li class="page-item"><a class="page-link" href="#">3</a></li>
-        <li class="page-item"><a class="page-link" href="#">Siguiente</a></li>
+            {% if products.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{products.previous_page_number}}">Anterior</a></li>
+            {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
+            {% endif %}
+
+            <!-- Con la siguiente logica se activan los numeros del paginador -->
+            {% for i in products.paginator.page_range %}
+
+                {% if products.number == i %}
+                <li class="page-item active"><a class="page-link" href="#">{{i}}</a></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{i}}">{{i}}</a></li>
+                {% endif %}
+
+            {% endfor %}
+
+            <!-- Se habilita el boton siguiente si existen siguientes paginas -->
+            {% if products.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{products.next_page_number}}">Siguiente</a></li>
+            {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#">Siguiente</a></li>
+            {% endif %}
       </ul>
+        {% endif %}
     </nav>
     
         </main> <!-- col.// -->
