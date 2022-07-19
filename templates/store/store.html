@@ -127,6 +127,8 @@
     </header><!-- sect-heading -->
     
     <div class="row">
+        <!-- Si existen productos haga el bucle for -->
+        {% if products %}
         {% for product in products %}
         <div class="col-md-4">
             <figure class="card card-product-grid">
@@ -148,6 +150,12 @@
             </figure>
         </div> <!-- col.// -->
         {% endfor %}
+            <!-- Si no existen productos imprima el mensaje -->
+            {% else %}
+            <div>
+                <h2>No se encontraron resultados. Intente despues</h2>
+            </div>
+        {% endif %}
     
 
     </div> <!-- row end.// -->
