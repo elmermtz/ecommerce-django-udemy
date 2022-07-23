@@ -1,7 +1,7 @@
 from itertools import product
 from django.shortcuts import render, redirect, get_object_or_404
 from carts.models import Cart, CartItem
-from store.models import Product
+from store.models import Product, Variation
 from django.core.exceptions import ObjectDoesNotExist
 # Create your views here.
 
@@ -20,9 +20,24 @@ def _cart_id(request):
 def add_cart(request, product_id):
     # Inicializa var product siendo product_id del request igual a la id
     product = Product.objects.get(id=product_id)
+    product_variation = []
+
+    if request.method == 'POST':
+        for item in request.POST:
+            key = item
+            value = request.POST[key]
+
+            try:
+                variation = Variation.objects.get(product=product, variation_category__iexact=key, variation_value__iexact=value)
+                product_variation.append(variation)
+            except:
+                pass
+
+
+
 
     # Se asegura primero exista carro cuya id sea igual al resultado
-    # de la funcion _cart_id
+    # de la funcion _cart_id, si no entonces CREARA EL CARRITO
     try:
         cart = Cart.objects.get(cart_id=_cart_id(request))
     except Cart.DoesNotExist:
@@ -31,22 +46,68 @@ def add_cart(request, product_id):
         )
     cart.save()
 
-    # El item sera llamado cart_item donde product debe ser igual ala 
-    # variable producto del principio y cart(carro) a la var cart
-    try:
-        cart_item = CartItem.objects.get(product=product, cart=cart)
-        # Cada vez se oprima el boton se sumara un item mas
-        cart_item.quantity +=1
-        # Se guarda
-        cart_item.save()
+    # SE CONSTATA QUE EXISTE UN ITEM PARA ANADIR AL CARRO
+    # DE NO EXISTIR ENTONCES LO CREAREMOS
 
-    # Si no existiera el item entonces se creara aqui
-    except CartItem.DoesNotExist:
+    # variable para saber si el ITEM (cart_item) existe o no
+    is_cart_item_exist = CartItem.objects.filter(product=product, cart=cart).exists
+    if is_cart_item_exist:
+        # ITEM(cart_item) entonces sera igual al item que ya esta en la BD
+        cart_item = CartItem.objects.filter(product=product, cart=cart)
+
+
+        #Procederemos a comparar si las variaciones son las mismas 
+        
+        # Creamos las listas vacias
+        ex_var_list = []
+        id = []
+
+        # Para el ITEM(cart_item)
+        for item in cart_item:
+            # Almacene todas las variaciones en var existing_variation
+            existing_variation = item.variations.all()
+            #Anadalas a la lista ex_var_list creada arriba
+            ex_var_list.append(list(existing_variation))
+            # Anada el id del item a la lista id creada arriba
+            id.append(item.id)
+
+        # Si las variaciones que me esta enviando el cliente esta en BD(ex_var_list)
+        if product_variation in ex_var_list:
+            # retorna el numero INDICE de esas variaciones 
+            index = ex_var_list.index(product_variation)
+            # Retorne el item_id de ese INDICE
+            item_id = id[index]
+            # Ahora el item es igual al producto que tiene como ID item_id
+            item = CartItem.objects.get(product=product, id=item_id)
+            # Suma uno a ese item.quantity
+            item.quantity += 1
+
+            item.save()
+
+         # Si las variaciones que me esta enviando el cliente NO ESTAN en BD(ex_var_list)
+        else:
+            # Se crea el ITEM con las especificaciones pertinente
+            item = CartItem.objects.create(product=product, quantity=1, cart=cart)
+            # Si existen variations en la lista(product_variation) se debe limpiar
+            if len(product_variation) > 0:
+                item.variations.clear()
+            # Anada las variaciones a la lista
+                item.variations.add(*product_variation)
+            item.save()
+            
+    # Si no existiera el ITEM entonces se creara aqui con las especificaciones siguientes
+    else:
         cart_item = CartItem.objects.create(
             product = product,
             quantity = 1,
             cart = cart,
         )
+        #si existieran variations en la lista se debe limpiar
+        if len(product_variation) > 0 :
+            cart_item.variations.clear()
+        # Se anaden las variaciones a la lista
+            cart_item.variations.add(*product_variation)
+
         cart_item.save()
 
     return redirect('cart')
