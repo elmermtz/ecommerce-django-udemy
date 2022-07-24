@@ -113,25 +113,27 @@ def add_cart(request, product_id):
     return redirect('cart')
 
 # ______Funcion para disminuir item del carrito a traves del boton_____
-def remove_cart(request, product_id):
+def remove_cart(request, product_id, cart_item_id):
     cart = Cart.objects.get(cart_id=_cart_id(request))
     product = get_object_or_404(Product, id=product_id)
-    cart_item = CartItem.objects.get(product=product, cart=cart)
 
-    if cart_item.quantity>1:
-        cart_item.quantity -= 1
-        cart_item.save()
+    try:
+        cart_item = CartItem.objects.get(product=product, cart=cart, id=cart_item_id)
+        if cart_item.quantity>1:
+            cart_item.quantity -= 1
+            cart_item.save()
 
-    else:
-        cart_item.delete()
-
+        else:
+            cart_item.delete()
+    except:
+        pass
     return redirect('cart')
 
 # ____Funcion para borrar un item del carrito____
-def remove_cart_item(request, product_id):
+def remove_cart_item(request, product_id, cart_item_id):
     cart = Cart.objects.get(cart_id=_cart_id(request))
     product = get_object_or_404(Product, id=product_id)
-    cart_item = CartItem.objects.get(product=product, cart=cart)
+    cart_item = CartItem.objects.get(product=product, cart=cart, id=cart_item_id)
     cart_item.delete()
     return redirect('cart')
 
